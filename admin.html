@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel — Harsh Packaging</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+/* ── ADMIN RESET ── */
+body { background:#13120F; }
+
+/* ── LOGIN PAGE ── */
+#login-page {
+  min-height:100vh; display:flex; align-items:center; justify-content:center;
+  background:linear-gradient(160deg, #13120F 0%, #1E1A14 60%, #0D1A12 100%);
+  padding:20px; position:relative; overflow:hidden;
+}
+#login-page::before {
+  content:''; position:absolute; inset:0;
+  background:url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 30L30 0L60 30L30 60Z' fill='none' stroke='rgba(200,147,90,0.05)' stroke-width='1'/%3E%3C/svg%3E") repeat;
+}
+.login-card {
+  background:rgba(255,255,255,0.04); border:1px solid rgba(200,147,90,0.2);
+  border-radius:24px; padding:52px 44px; width:100%; max-width:420px;
+  backdrop-filter:blur(20px); position:relative; z-index:2;
+  text-align:center;
+}
+.login-logo {
+  font-family:'Cormorant Garamond',serif; font-size:2rem; font-weight:800;
+  color:#F0D9B5; margin-bottom:6px;
+}
+.login-logo span { color:#5A9B6A; }
+.login-subtitle { font-size:0.82rem; color:rgba(240,217,181,0.45); margin-bottom:36px; }
+.login-card .form-label { color:rgba(240,217,181,0.65); text-align:left; }
+.login-card .form-input {
+  background:rgba(255,255,255,0.06); border-color:rgba(200,147,90,0.2);
+  color:#F0D9B5;
+}
+.login-card .form-input:focus { border-color:#C8935A; background:rgba(255,255,255,0.08); }
+.login-card .form-input::placeholder { color:rgba(240,217,181,0.3); }
+#login-error { display:none; color:#F5A0A0; font-size:0.82rem; margin-bottom:14px; padding:10px; background:rgba(200,80,80,0.12); border-radius:8px; }
+.login-note { font-size:0.72rem; color:rgba(240,217,181,0.3); margin-top:16px; }
+.btn-login {
+  width:100%; background:linear-gradient(135deg,#C8935A,#E07B39);
+  color:white; border:none; padding:14px; border-radius:50px;
+  font-family:'Outfit',sans-serif; font-size:0.95rem; font-weight:600;
+  cursor:pointer; transition:all 0.3s; margin-top:4px;
+}
+.btn-login:hover { transform:translateY(-2px); box-shadow:0 10px 28px rgba(200,147,90,0.3); }
+
+/* ── ADMIN SHELL ── */
+#admin-panel { display:none; min-height:100vh; background:#13120F; }
+
+/* Admin Nav */
+.admin-nav {
+  background:#1A1711; border-bottom:1px solid rgba(200,147,90,0.12);
+  padding:0 5%; display:flex; align-items:center; justify-content:space-between;
+  height:60px; position:sticky; top:0; z-index:100;
+}
+.admin-nav-logo { font-family:'Cormorant Garamond',serif; font-size:1.3rem; font-weight:700; color:#F0D9B5; }
+.admin-nav-logo span { color:#5A9B6A; }
+.admin-nav-right { display:flex; align-items:center; gap:14px; }
+.admin-nav a { font-size:0.82rem; color:rgba(240,217,181,0.5); transition:color 0.2s; }
+.admin-nav a:hover { color:#F0D9B5; }
+
+/* Admin Layout */
+.admin-layout { display:grid; grid-template-columns:220px 1fr; min-height:calc(100vh - 60px); }
+
+/* Sidebar */
+.admin-sidebar {
+  background:#1A1711; border-right:1px solid rgba(200,147,90,0.1);
+  padding:24px 0;
+}
+.sidebar-label {
+  font-size:0.65rem; font-weight:700; letter-spacing:2px; text-transform:uppercase;
+  color:rgba(240,217,181,0.3); padding:0 20px; margin-bottom:8px;
+}
+.sidebar-link {
+  display:flex; align-items:center; gap:10px;
+  padding:12px 20px; font-size:0.88rem; color:rgba(240,217,181,0.55);
+  transition:all 0.25s; cursor:pointer; border:none; background:none;
+  width:100%; text-align:left; font-family:'Outfit',sans-serif;
+}
+.sidebar-link:hover { color:#F0D9B5; background:rgba(200,147,90,0.06); }
+.sidebar-link.active { color:#C8935A; background:rgba(200,147,90,0.1); border-right:3px solid #C8935A; }
+
+/* Admin Content */
+.admin-content { padding:32px; overflow-y:auto; }
+
+/* Stats Row */
+.stats-row { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:32px; }
+.stat-card {
+  background:rgba(255,255,255,0.04); border:1px solid rgba(200,147,90,0.12);
+  border-radius:16px; padding:22px;
+}
+.stat-card-icon { font-size:1.8rem; margin-bottom:10px; }
+.stat-card-num { font-family:'Cormorant Garamond',serif; font-size:2rem; font-weight:700; color:#F0D9B5; }
+.stat-card-lbl { font-size:0.75rem; color:rgba(240,217,181,0.4); margin-top:4px; }
+
+/* Tabs */
+.tabs-bar { display:flex; gap:4px; margin-bottom:28px; background:rgba(255,255,255,0.04); border-radius:12px; padding:4px; }
+.tab-btn {
+  flex:1; padding:10px 16px; border:none; background:transparent;
+  font-family:'Outfit',sans-serif; font-size:0.85rem; font-weight:500;
+  color:rgba(240,217,181,0.5); border-radius:10px; cursor:pointer; transition:all 0.25s;
+}
+.tab-btn:hover { color:#F0D9B5; }
+.tab-btn.active { background:rgba(200,147,90,0.18); color:#C8935A; font-weight:600; }
+.tab-pane { display:none; }
+.tab-pane.active { display:block; }
+
+/* Section Headers */
+.section-header {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:20px; flex-wrap:wrap; gap:12px;
+}
+.section-header h3 { font-family:'Cormorant Garamond',serif; font-size:1.4rem; color:#F0D9B5; }
+.admin-action-row { display:flex; gap:10px; flex-wrap:wrap; }
+
+/* Admin buttons */
+.adm-btn {
+  padding:9px 18px; border-radius:50px; font-family:'Outfit',sans-serif;
+  font-size:0.82rem; font-weight:600; cursor:pointer; transition:all 0.25s; border:none;
+}
+.adm-btn-primary { background:#C8935A; color:white; }
+.adm-btn-primary:hover { background:#E07B39; transform:translateY(-1px); }
+.adm-btn-green { background:#3D6B4A; color:white; }
+.adm-btn-green:hover { background:#2d5238; }
+.adm-btn-edit { background:rgba(200,147,90,0.15); color:#C8935A; border:1px solid rgba(200,147,90,0.25); }
+.adm-btn-edit:hover { background:rgba(200,147,90,0.25); }
+.adm-btn-del { background:rgba(200,80,80,0.12); color:#F5A0A0; border:1px solid rgba(200,80,80,0.2); }
+.adm-btn-del:hover { background:rgba(200,80,80,0.22); }
+.adm-btn-sm { padding:7px 14px; font-size:0.78rem; }
+.adm-btn-ghost { background:transparent; color:rgba(240,217,181,0.5); border:1px solid rgba(200,147,90,0.15); }
+.adm-btn-ghost:hover { color:#F0D9B5; border-color:rgba(200,147,90,0.35); }
+
+/* Products list */
+.admin-products-list { display:flex; flex-direction:column; gap:14px; }
+.admin-product-row {
+  display:flex; align-items:center; gap:16px;
+  background:rgba(255,255,255,0.04); border:1px solid rgba(200,147,90,0.1);
+  border-radius:14px; padding:16px; transition:all 0.25s;
+}
+.admin-product-row:hover { border-color:rgba(200,147,90,0.25); background:rgba(255,255,255,0.06); }
+.ap-thumb {
+  width:64px; height:64px; border-radius:10px; overflow:hidden; flex-shrink:0;
+}
+.ap-thumb img { width:100%; height:100%; object-fit:cover; }
+.ap-color-swatch { width:100%; height:100%; border-radius:10px; }
+.ap-info { flex:1; min-width:0; }
+.ap-name { font-family:'Cormorant Garamond',serif; font-size:1.05rem; font-weight:700; color:#F0D9B5; margin-bottom:4px; }
+.ap-desc { font-size:0.78rem; color:rgba(240,217,181,0.45); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:8px; }
+.ap-tags { display:flex; flex-wrap:wrap; gap:5px; }
+.admin-tag { font-size:0.65rem; padding:3px 8px; border-radius:50px; background:rgba(61,107,74,0.2); color:#A8D5B5; font-weight:600; }
+.ap-actions { display:flex; gap:8px; flex-shrink:0; }
+.empty-state { text-align:center; padding:48px; color:rgba(240,217,181,0.35); font-size:0.9rem; }
+
+/* Orders Table */
+.orders-toolbar { display:flex; align-items:center; gap:12px; margin-bottom:16px; flex-wrap:wrap; }
+.order-search {
+  flex:1; min-width:200px; background:rgba(255,255,255,0.05);
+  border:1px solid rgba(200,147,90,0.2); border-radius:50px;
+  padding:9px 18px; color:#F0D9B5; font-family:'Outfit',sans-serif; font-size:0.85rem;
+  outline:none; transition:all 0.25s;
+}
+.order-search::placeholder { color:rgba(240,217,181,0.3); }
+.order-search:focus { border-color:#C8935A; }
+.orders-table-wrap { overflow-x:auto; border-radius:14px; }
+.orders-table {
+  width:100%; border-collapse:collapse;
+  font-size:0.84rem; color:rgba(240,217,181,0.75);
+}
+.orders-table th {
+  background:rgba(200,147,90,0.1); color:rgba(240,217,181,0.5);
+  font-size:0.7rem; font-weight:700; letter-spacing:1px; text-transform:uppercase;
+  padding:12px 16px; text-align:left;
+}
+.orders-table td { padding:14px 16px; border-bottom:1px solid rgba(200,147,90,0.06); vertical-align:middle; }
+.orders-table tr:hover td { background:rgba(255,255,255,0.03); }
+.order-num { color:rgba(240,217,181,0.35); font-size:0.78rem; }
+.order-time { font-size:0.75rem; color:rgba(240,217,181,0.4); white-space:nowrap; }
+.empty-row { text-align:center; padding:48px!important; color:rgba(240,217,181,0.3); font-style:italic; }
+
+/* Product Form Overlay */
+.pf-overlay {
+  display:none; position:fixed; inset:0; z-index:2000;
+  background:rgba(13,10,5,0.85); backdrop-filter:blur(8px);
+  align-items:center; justify-content:center; padding:20px;
+}
+.pf-overlay.open { display:flex; }
+.pf-card {
+  background:#1E1A14; border:1px solid rgba(200,147,90,0.2);
+  border-radius:24px; padding:36px; width:100%; max-width:560px;
+  max-height:90vh; overflow-y:auto;
+  animation:modalIn 0.35s cubic-bezier(.23,1,.32,1);
+}
+.pf-header {
+  display:flex; align-items:center; justify-content:space-between; margin-bottom:28px;
+}
+.pf-header h3 { font-family:'Cormorant Garamond',serif; font-size:1.5rem; font-weight:700; color:#F0D9B5; }
+.pf-close {
+  background:rgba(255,255,255,0.06); border:1px solid rgba(200,147,90,0.15);
+  border-radius:8px; width:34px; height:34px; color:rgba(240,217,181,0.6);
+  font-size:1.1rem; cursor:pointer; transition:all 0.25s;
+  display:flex; align-items:center; justify-content:center;
+}
+.pf-close:hover { background:rgba(200,80,80,0.15); color:#F5A0A0; }
+.pf-card .form-label { color:rgba(240,217,181,0.65); }
+.pf-card .form-input {
+  background:rgba(255,255,255,0.06); border-color:rgba(200,147,90,0.2); color:#F0D9B5;
+}
+.pf-card .form-input:focus { border-color:#C8935A; background:rgba(255,255,255,0.08); }
+.pf-card .form-input::placeholder { color:rgba(240,217,181,0.25); }
+.color-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.img-preview-wrap { margin-top:10px; }
+.img-preview-wrap img { width:100%; max-height:160px; object-fit:cover; border-radius:10px; border:1px solid rgba(200,147,90,0.2); }
+.pf-footer { display:flex; gap:12px; justify-content:flex-end; margin-top:24px; }
+
+/* Settings */
+.settings-card {
+  background:rgba(255,255,255,0.04); border:1px solid rgba(200,147,90,0.12);
+  border-radius:16px; padding:28px; max-width:520px;
+}
+.settings-card .form-label { color:rgba(240,217,181,0.65); }
+.settings-card .form-input {
+  background:rgba(255,255,255,0.06); border-color:rgba(200,147,90,0.2); color:#F0D9B5;
+}
+.settings-card .form-input:focus { border-color:#C8935A; }
+.settings-card .form-input::placeholder { color:rgba(240,217,181,0.25); }
+.settings-hint { font-size:0.78rem; color:rgba(240,217,181,0.35); margin-top:6px; }
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px) {
+  .admin-layout { grid-template-columns:1fr; }
+  .admin-sidebar { display:none; }
+  .stats-row { grid-template-columns:1fr 1fr; }
+  .admin-content { padding:20px; }
+  .ap-actions { flex-direction:column; }
+  .pf-card { padding:24px; }
+  .login-card { padding:36px 24px; }
+}
+@media(max-width:480px) {
+  .stats-row { grid-template-columns:1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ADMIN TOAST -->
+<div id="admin-toast" id="toast-container" style="position:fixed;bottom:28px;right:28px;z-index:10000;display:flex;flex-direction:column;gap:10px"></div>
+
+<!-- ── LOGIN PAGE ── -->
+<div id="login-page">
+  <div class="login-card">
+    <div class="login-logo">Harsh<span>Pack</span></div>
+    <div class="login-subtitle">Admin Dashboard — Restricted Access</div>
+    <form id="login-form">
+      <div id="login-error"></div>
+      <div class="form-group">
+        <label class="form-label">Username</label>
+        <input type="text" class="form-input" id="login-user" placeholder="admin" autocomplete="username" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" class="form-input" id="login-pass" placeholder="••••••••" autocomplete="current-password" required>
+      </div>
+      <button type="submit" class="btn-login">Sign In</button>
+    </form>
+    <p class="login-note">Default: admin / harsh@admin — Change in admin.js</p>
+  </div>
+</div>
+
+<!-- ── ADMIN PANEL ── -->
+<div id="admin-panel">
+
+  <!-- Admin Nav -->
+  <nav class="admin-nav">
+    <div class="admin-nav-logo">Harsh<span>Pack</span> <span style="font-size:0.7rem;color:rgba(240,217,181,0.35);font-family:'Outfit',sans-serif;font-weight:400">Admin</span></div>
+    <div class="admin-nav-right">
+      <a href="index.html" target="_blank">↗ View Site</a>
+      <button class="adm-btn adm-btn-ghost adm-btn-sm" id="logout-btn">Sign Out</button>
+    </div>
+  </nav>
+
+  <!-- Admin Layout -->
+  <div class="admin-layout">
+
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-label">Dashboard</div>
+      <button class="sidebar-link active" data-tab="products" onclick="switchTab('products')">📦 Products</button>
+      <button class="sidebar-link" data-tab="orders" onclick="switchTab('orders')">📋 Orders</button>
+      <button class="sidebar-link" data-tab="settings" onclick="switchTab('settings')">⚙ Settings</button>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-content">
+
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-card-icon">📦</div>
+          <div class="stat-card-num" id="stat-products">0</div>
+          <div class="stat-card-lbl">Total Products</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon">📋</div>
+          <div class="stat-card-num" id="stat-orders">0</div>
+          <div class="stat-card-lbl">Total Orders</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon">🔢</div>
+          <div class="stat-card-num" id="stat-qty">0</div>
+          <div class="stat-card-lbl">Boxes Ordered</div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs-bar">
+        <button class="tab-btn active" data-tab="products" onclick="switchTab('products')">📦 Products</button>
+        <button class="tab-btn" data-tab="orders" onclick="switchTab('orders')">📋 Orders</button>
+        <button class="tab-btn" data-tab="settings" onclick="switchTab('settings')">⚙ Settings</button>
+      </div>
+
+      <!-- TAB: Products -->
+      <div class="tab-pane active" id="tab-products">
+        <div class="section-header">
+          <h3>Manage Products</h3>
+          <button class="adm-btn adm-btn-primary" id="add-product-btn">+ Add Product</button>
+        </div>
+        <div class="admin-products-list" id="admin-products-list">
+          <div class="empty-state">Loading…</div>
+        </div>
+      </div>
+
+      <!-- TAB: Orders -->
+      <div class="tab-pane" id="tab-orders">
+        <div class="section-header">
+          <h3>Order History</h3>
+          <div class="admin-action-row">
+            <button class="adm-btn adm-btn-green" id="export-orders">⬇ Export CSV</button>
+            <button class="adm-btn adm-btn-del" id="clear-orders">🗑 Clear All</button>
+          </div>
+        </div>
+        <div class="orders-toolbar">
+          <input type="search" class="order-search" id="order-search" placeholder="🔍 Search by customer or product…">
+        </div>
+        <div class="orders-table-wrap">
+          <table class="orders-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Customer Name</th>
+                <th>Product</th>
+                <th>Quantity</th>
+                <th>Note</th>
+                <th>Date & Time</th>
+              </tr>
+            </thead>
+            <tbody id="orders-tbody">
+              <tr><td colspan="6" class="empty-row">Loading orders…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB: Settings -->
+      <div class="tab-pane" id="tab-settings">
+        <div class="section-header"><h3>Site Settings</h3></div>
+        <form id="settings-form">
+          <div class="settings-card">
+            <div class="form-group">
+              <label class="form-label">WhatsApp Number</label>
+              <input type="text" class="form-input" id="set-wa" placeholder="91XXXXXXXXXX" required>
+              <p class="settings-hint">Country code + number, no spaces or +. E.g. 919876543210</p>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Minimum Order Quantity (MOQ)</label>
+              <input type="number" class="form-input" id="set-moq" placeholder="100" min="1" required>
+              <p class="settings-hint">Customers cannot order below this quantity.</p>
+            </div>
+            <button type="submit" class="adm-btn adm-btn-primary">Save Settings</button>
+            <p class="settings-hint" style="margin-top:12px">⚠ Also update <code>CONFIG.WA_NUMBER</code> and <code>CONFIG.MOQ</code> in <strong>script.js</strong> for permanent changes.</p>
+          </div>
+        </form>
+
+        <div class="settings-card" style="margin-top:24px">
+          <h4 style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:#F0D9B5;margin-bottom:12px">Admin Credentials</h4>
+          <p class="settings-hint" style="line-height:1.7">To change username or password, edit the <code>ADMIN</code> object at the top of <strong>admin.js</strong>.</p>
+          <div style="margin-top:12px;background:rgba(200,147,90,0.08);border-radius:8px;padding:12px;font-size:0.8rem;color:rgba(240,217,181,0.5);font-family:monospace">
+            const ADMIN = {<br>&nbsp;&nbsp;USERNAME: 'admin',<br>&nbsp;&nbsp;PASSWORD: 'harsh@admin',<br>};
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- ── PRODUCT FORM OVERLAY ── -->
+<div class="pf-overlay" id="product-form-overlay">
+  <div class="pf-card">
+    <div class="pf-header">
+      <h3 id="pf-title">Add Product</h3>
+      <button class="pf-close" id="close-pf">✕</button>
+    </div>
+    <form id="pf-form">
+      <input type="hidden" id="pf-id">
+      <input type="hidden" id="pf-current-img">
+
+      <div class="form-group">
+        <label class="form-label">Product Name *</label>
+        <input type="text" class="form-input" id="pf-name" placeholder="e.g. Fast Food Box" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Description *</label>
+        <textarea class="form-input" id="pf-desc" placeholder="Describe the product, its uses, and material quality…" required></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Quality Tags (comma-separated)</label>
+        <input type="text" class="form-input" id="pf-tags" placeholder="Food Grade, Eco-Friendly, Durable">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">3D Box Shape (used when no image uploaded)</label>
+        <select class="form-input" id="pf-shape">
+          <option value="flat">Flat (Wide) — Fast Food / Burger Style</option>
+          <option value="tall">Tall — Sweet / Mithai Box</option>
+          <option value="square">Square — Premium / Custom Box</option>
+        </select>
+      </div>
+
+      <div class="color-row">
+        <div class="form-group">
+          <label class="form-label">Box Color A (Primary)</label>
+          <input type="color" class="form-input" id="pf-colora" value="#C8935A" style="height:46px;padding:4px 8px;cursor:pointer">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Box Color B (Secondary)</label>
+          <input type="color" class="form-input" id="pf-colorb" value="#E07B39" style="height:46px;padding:4px 8px;cursor:pointer">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Product Image (optional, max 2MB)</label>
+        <input type="file" class="form-input" id="pf-image" accept="image/*" style="padding:10px">
+        <p class="settings-hint" style="margin-top:6px">If no image, the 3D box visualization will be shown instead.</p>
+        <div class="img-preview-wrap">
+          <img id="pf-img-preview" src="" alt="Preview" style="display:none">
+        </div>
+      </div>
+
+      <div class="pf-footer">
+        <button type="button" class="adm-btn adm-btn-ghost" id="cancel-pf" onclick="closeProductForm()">Cancel</button>
+        <button type="submit" class="adm-btn adm-btn-primary">Save Product</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="admin.js"></script>
+<script>
+// Sidebar active state
+document.querySelectorAll('.sidebar-link').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.sidebar-link').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+});
+</script>
+</body>
+</html>
