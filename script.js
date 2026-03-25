@@ -5,9 +5,9 @@
 
 // ── CONFIG ──────────────────────────────────────
 const CONFIG = {
-  WA_NUMBER: '91XXXXXXXXXX',   // ← Replace with your WhatsApp number (e.g. 919876543210)
+  WA_NUMBER: '918320579839',   // ← Replace with your WhatsApp number (e.g. 919876543210)
   MOQ: 100,
-  ADMIN_PASS: 'harsh@admin',   // ← Change in admin.js too
+  ADMIN_PASS: 'hasrh2006k',   // ← Change in admin.js too
 };
 
 // ── STORAGE HELPERS ─────────────────────────────
